@@ -1,0 +1,71 @@
+#! /bin/bash
+#
+# Name: Compare POSCARs
+# Author: Alex Ganose (alexganose@googlemail.com)
+# Version: 1.0
+# Date: 31/03/16
+# Usage: cpos [POSCAR] [CONTCAR]
+#
+# Tabulates and compares the lattice constants and angles of two
+# input files in the POSCAR format
+
+[ "$#" -ne "2" ] && echo "invalid number of arguments" && exit
+[ ! -f "$1" ] && echo "$1 does not exist" && exit
+[ ! -f "$2" ] && echo "$2 does not exist" && exit
+
+f1=$(basename $1)
+f2=$(basename $2)
+
+# Helper function that takes a POSCAR and spits out the cell parameters
+read_poscar(){
+    awk '
+    function mag(v1, v2, v3) { return sqrt(v1^2 + v2^2 + v3^2) }
+    function dot(v1, v2, v3, u1, u2, u3) { return v1*u1 + v2*u2 + v3*u3 }
+    {
+        if (NR == 2) { n = $1 } # scaling factor
+        if (NR == 3) { a1 = $1; a2 = $2; a3 = $3 } # lattice vectors
+        if (NR == 4) { b1 = $1; b2 = $2; b3 = $3 }
+        if (NR == 5) { c1 = $1; c2 = $2; c3 = $3 }
+    } END {
+        pi = atan2(0,-1)
+
+        a = n * mag(a1, a2, a3)
+        b = n * mag(b1, b2, b3)
+        c = n * mag(c1, c2, c3)
+
+        cosa = dot(b1, b2, b3, c1, c2, c3) / (b * c)
+        cosb = dot(a1, a2, a3, c1, c2, c3) / (a * c)
+        cosg = dot(a1, a2, a3, b1, b2, b3) / (a * b)
+
+        alp = atan2(sqrt(1 - cosa^2), cosa) * 180 / pi;
+        bet = atan2(sqrt(1 - cosb^2), cosb) * 180 / pi;
+        gam = atan2(sqrt(1 - cosg^2), cosg) * 180 / pi;
+
+        printf "%.10f %.10f %.10f %.10f %.10f %.10f", a, b, c, alp, bet, gam
+    }' "$1"
+}
+
+read a1 b1 c1 alp1 bet1 gam1 <<< $(read_poscar $1)
+read a2 b2 c2 alp2 bet2 gam2 <<< $(read_poscar $2)
+
+# Print the output... use awk to do the (basic) maths
+awk -v f1="$f1" -v f2="$f2" \
+    -v a1="$a1" -v a2="$a2" \
+    -v b1="$b1" -v b2="$b2" \
+    -v c1="$c1" -v c2="$c2" \
+    -v alp1="$alp1" -v alp2="$alp2" \
+    -v bet1="$bet1" -v bet2="$bet2" \
+    -v gam1="$gam1" -v gam2="$gam2" \
+'BEGIN {
+    da = 100 * (a2 - a1) / a1
+    db = 100 * (b2 - b1) / b1
+    dc = 100 * (c2 - c1) / c1
+    dalp = 100 * (alp2 - alp1) / alp1
+    dbet = 100 * (bet2 - bet1) / bet1
+    dgam = 100 * (gam2 - gam1) / gam1
+
+    printf "input a b c alpha beta gamma\n"
+    printf "%s %.4f %.4f %.4f %.2f %.2f %.2f\n", f1, a1, b1, c1, alp1, bet1, gam1
+    printf "%s %.4f %.4f %.4f %.2f %.2f %.2f\n", f2, a2, b2, c2, alp2, bet2, gam2
+    printf "diff(%) %.4f %.4f %.4f %.2f %.2f %.2f\n", da, db, dc, dalp, dbet, dgam
+}' | column -t

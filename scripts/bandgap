@@ -1,0 +1,69 @@
+#! /usr/bin/awk -f
+#
+# Name: Get band gap
+# Author: Alex Ganose (alexganose@googlemail.com)
+# Version: 1.0
+# Date: 05/05/16
+# Usage: bandgap [OUTCAR]
+#
+# Extracts the indirect and direct band gap information from an OUTCAR
+# Doesn't work well for partial occupancies, so make sure SIGMA is
+# set appropriately.
+
+BEGIN {
+    en_vbm = -999999
+    en_cbm = 999999
+    bg_dir = 999999
+}
+
+/E-fermi/ {
+    en_vbm = -999999
+    en_cbm = 999999
+    bg_dir = 999999
+}
+
+/LSORBIT/ || /ISPIN/ {
+    min_occ=(($3 == "T") || ($3 == 2) || (min_occ == 0.5)) ? 0.5 : 1
+}
+
+/ k-point / && (NF==6) {
+    kpoint=$2
+    kx=$4
+    ky=$5
+    kz=$6
+
+    getline # Ignore this line 'band No. band energies occupation'
+    while ($3 > min_occ && getline) #while more than half an electron
+    {
+        occ=unocc # juggle temporary variables
+        unocc=$2 # band energy
+    }
+
+    tmp_bg = unocc - occ
+    if (tmp_bg < bg_dir) {
+        bg_dir = tmp_bg
+        kp_dir = sprintf("%.2f %.2f %.2f", kx, ky, kz)
+        en_vbm_dir = occ
+        en_cbm_dir = unocc
+    }
+
+    if (occ > en_vbm) {
+        en_vbm = occ
+        kp_vbm[1] = sprintf("%.2f %.2f %.2f", kx, ky, kz)
+        kp_vbm[2] = kpoint
+    }
+
+    if (unocc < en_cbm) {
+        en_cbm = unocc
+        kp_cbm[1] = sprintf("%.2f %.2f %.2f", kx, ky, kz)
+        kp_cbm[2] = kpoint
+    }
+}
+
+END {
+    print "          E_g     E_VBM  E_CBM  kpoint_VBM      kpoint_CBM"
+    printf "direct    %.3f   %.3f  %.3f  %s  %s\n", bg_dir, en_vbm_dir, en_cbm_dir,  kp_dir, kp_dir
+    if (kp_vbm[2] != kp_cbm[2]){
+        printf "indirect  %.3f   %.3f  %.3f  %s  %s\n", en_cbm - en_vbm, en_vbm, en_cbm, kp_vbm[1], kp_cbm[1]
+    }
+}
