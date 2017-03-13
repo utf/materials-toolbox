@@ -18,6 +18,6 @@ except IOError:
 print "Initial structure has {} atoms".format(struct.num_sites)
 
 sym = SpacegroupAnalyzer(struct, symprec=1e-3)
-prim = sym.get_primitive_standard_structure()
+prim = sym.get_conventional_standard_structure()
 print "Final structure has {} atoms".format(prim.num_sites)
-prim.to(filename="{}_prim".format(sys.argv[1]), fmt="poscar")
+prim.to(filename="{}_conv".format(sys.argv[1]), fmt="poscar")
