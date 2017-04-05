@@ -14,7 +14,7 @@ parser.add_argument('-t', '--tol', help='symmetry tolerance (default 1e-3)',
 args = parser.parse_args()
 
 struct = Structure.from_file(args.file)
-sym = SpacegroupAnalyzer(struct, args.tol)
+sym = SpacegroupAnalyzer(struct, symprec=args.tol)
 data = sym.get_symmetry_dataset()
 
 print "Space group number: {}".format(data['number'])
