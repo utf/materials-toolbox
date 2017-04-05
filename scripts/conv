@@ -19,4 +19,4 @@ conv = sym.get_conventional_standard_structure()
 conv.to(filename="{}_conv".format(args.file), fmt="poscar")
 
 print "Initial structure has {} atoms".format(struct.num_sites)
-print "Final structure has {} atoms".format(prim.num_sites)
+print "Final structure has {} atoms".format(conv.num_sites)
