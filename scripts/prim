@@ -39,7 +39,7 @@ print "\tSpace group number: {}".format(data['number'])
 print "\tInternational symbol: {}".format(data['international'])
 print "\tLattice type: {}".format(sym.get_lattice_type())
 
-# first standardise the cell using the tolerance we want (seekpath has no 
+# first standardise the cell using the tolerance we want (seekpath has no
 # tolerance setting)
 std = spglib.standardize_cell(sym._cell, symprec=args.tol)
 
