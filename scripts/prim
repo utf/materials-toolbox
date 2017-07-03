@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import sys
 import argparse
 
 import spglib
@@ -34,10 +33,10 @@ struct = Structure.from_file(args.file)
 sym = SpacegroupAnalyzer(struct, symprec=args.tol)
 data = sym.get_symmetry_dataset()
 
-print "Initial structure has {} atoms".format(struct.num_sites)
-print "\tSpace group number: {}".format(data['number'])
-print "\tInternational symbol: {}".format(data['international'])
-print "\tLattice type: {}".format(sym.get_lattice_type())
+print('Initial structure has {} atoms'.format(struct.num_sites))
+print('\tSpace group number: {}'.format(data['number']))
+print('\tInternational symbol: {}'.format(data['international']))
+print('\tLattice type: {}'.format(sym.get_lattice_type()))
 
 # first standardise the cell using the tolerance we want (seekpath has no
 # tolerance setting)
@@ -45,6 +44,7 @@ std = spglib.standardize_cell(sym._cell, symprec=args.tol)
 
 # sadly the quickest way to get the data we need
 seek_data = seekpath.get_path(std)
+transform = seek_data['primitive_transformation_matrix']
 
 # now remake the structure
 lattice = seek_data['primitive_lattice']
@@ -52,6 +52,8 @@ scaled_positions = seek_data['primitive_positions']
 numbers = seek_data['primitive_types']
 species = [sym._unique_species[i - 1] for i in numbers]
 prim = Structure(lattice, species, scaled_positions)
-prim.to(filename="{}_prim".format(args.file), fmt=args.output)
+prim.to(filename='{}_prim'.format(args.file), fmt=args.output)
 
-print "Final structure has {} atoms".format(prim.num_sites)
+print('Final structure has {} atoms'.format(prim.num_sites))
+print('Transformation matrix:')
+print('\t' + str(transform).replace('\n', '\n\t'))
