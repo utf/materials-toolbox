@@ -30,6 +30,7 @@ lattice, scaled_positions, numbers = spglib.standardize_cell(
         sym._cell, symprec=args.tol)
 species = [sym._unique_species[i - 1] for i in numbers]
 conv = Structure(lattice, species, scaled_positions)
-conv.to(filename="{}_conv".format(args.file), fmt=args.output)
+conv.get_sorted_structure().to(filename="{}_conv".format(args.file), 
+                               fmt=args.output)
 
 print "Final structure has {} atoms".format(conv.num_sites)
