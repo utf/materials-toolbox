@@ -52,8 +52,8 @@ scaled_positions = seek_data['primitive_positions']
 numbers = seek_data['primitive_types']
 species = [sym._unique_species[i - 1] for i in numbers]
 prim = Structure(lattice, species, scaled_positions)
-prim.get_sorted_structure().(filename='{}_prim'.format(args.file),
-                                                       fmt=args.output)
+prim.get_sorted_structure().filename='{}_prim'.format(args.file,
+                                                      fmt=args.output)
 
 print('Final structure has {} atoms'.format(prim.num_sites))
 print('Transformation matrix:')
