@@ -1,11 +1,21 @@
 #!/usr/bin/env python
 
-import sys
 import argparse
 import spglib
+import seekpath
 
 from pymatgen.core.structure import Structure
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+
+"""
+Script to generate the standardised conventional cell structure
+
+Some notes:
+  - The "standard" is based on: https://doi.org/10.1016/j.commatsci.2016.10.015
+  - Pymatgen is used for loading files and calculating the symmetry info
+  - Seekpath is used to generate the standard conventional cell as the pymatgen
+    "standard" is at odds to Bradley & Cracknell and other conventions
+"""
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--file', help='path to input file', default='POSCAR',
@@ -25,9 +35,14 @@ print "\tSpace group number: {}".format(data['number'])
 print "\tInternational symbol: {}".format(data['international'])
 print "\tLattice type: {}".format(sym.get_lattice_type())
 
-# pymatgen conv definition differnt from spglib
-lattice, scaled_positions, numbers = spglib.standardize_cell(
-        sym._cell, symprec=args.tol)
+# seekpath conventional cell definition different from spglib
+std = spglib.standardize_cell(sym._cell, symprec=args.tol, to_primitive=True)
+seek_data = seekpath.get_path(std)
+
+# now remake the structure
+lattice = seek_data['conv_lattice']
+scaled_positions = seek_data['conv_positions']
+numbers = seek_data['conv_types']
 species = [sym._unique_species[i - 1] for i in numbers]
 conv = Structure(lattice, species, scaled_positions)
 conv.get_sorted_structure().to(filename="{}_conv".format(args.file), 

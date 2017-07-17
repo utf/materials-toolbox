@@ -40,7 +40,7 @@ print('\tLattice type: {}'.format(sym.get_lattice_type()))
 
 # first standardise the cell using the tolerance we want (seekpath has no
 # tolerance setting)
-std = spglib.standardize_cell(sym._cell, symprec=args.tol)
+std = spglib.standardize_cell(sym._cell, symprec=args.tol, to_primitive=True)
 
 # sadly the quickest way to get the data we need
 seek_data = seekpath.get_path(std)
