@@ -45,7 +45,7 @@ scaled_positions = seek_data['conv_positions']
 numbers = seek_data['conv_types']
 species = [sym._unique_species[i - 1] for i in numbers]
 conv = Structure(lattice, species, scaled_positions)
-conv.get_sorted_structure().to(filename="{}_conv".format(args.file), 
+conv.get_sorted_structure().to(filename="{}_conv".format(args.file),
                                fmt=args.output)
 
 print "Final structure has {} atoms".format(conv.num_sites)
