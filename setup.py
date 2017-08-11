@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 project_dir = abspath(dirname(__file__))
 
 setup(
-    name='materials-toolbox',
+    name='matools',
     version='1.0.0',
     description='Convenience tools for working with comp chem HPC',
     long_description="""
