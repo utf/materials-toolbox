@@ -39,9 +39,9 @@ def main():
 
     # first standardise the cell using the tolerance we want (seekpath has no
     # tolerance setting)
-    std = spglib.standardize_cell(sym._cell, symprec=args.tol,
-                                  to_primitive=True)
+    std = spglib.refine_cell(sym._cell, symprec=args.tol)
     seek_data = seekpath.get_path(std)
+
     transform = seek_data['primitive_transformation_matrix']
 
     # now remake the structure

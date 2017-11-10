@@ -36,8 +36,7 @@ def main():
     print("\tLattice type: {}".format(sym.get_lattice_type()))
 
     # seekpath conventional cell definition different from spglib
-    std = spglib.standardize_cell(sym._cell, symprec=args.tol,
-                                  to_primitive=True)
+    std = spglib.refine_cell(sym._cell, symprec=args.tol)
     seek_data = seekpath.get_path(std)
 
     # now remake the structure
