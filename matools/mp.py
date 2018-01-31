@@ -14,9 +14,10 @@ import logging
 import ase.db
 
 from sys import stdout
+from builtins import input
 
 from pymatgen.io.ase import AseAtomsAdaptor
-from pymatgen.matproj.rest import MPRester
+from pymatgen.ext.matproj import MPRester
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
 # ideas:
@@ -60,7 +61,7 @@ def prompt_selection(entries, save_all=False):
     if save_all:
         ids = range(1, len(entries) + 1)
     else:
-        id_selection = raw_input('\nWhich structures do you wish to download (type all to select all structures)?\n')
+        id_selection = input('\nWhich structures do you wish to download (type all to select all structures)?\n')
         if 'all' in id_selection:
             ids = range(1, len(entries) + 1)
         else:
