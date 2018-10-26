@@ -17,7 +17,7 @@ def main():
                         help='path to input file')
     args = parser.parse_args()
 
-    int_dim = map(int, args.dim)
+    int_dim = list(map(int, args.dim))
     if len(int_dim) == 1:
         dim = int_dim[0]
     elif len(int_dim) == 3:
