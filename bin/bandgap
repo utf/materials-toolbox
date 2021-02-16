@@ -11,7 +11,7 @@
 # set appropriately.
 #
 # Script originally written by Jarvist Frost (https://github.com/jarvist/hpc-bin)
-# and modified to support spin-polarization and geometry optimisations by
+# and modified to support non-collinear systems and geometry optimisations by
 # Alex Ganose.
 
 BEGIN {
