@@ -1,7 +1,7 @@
 #! /usr/bin/awk -f
 #
 # Name: Get band gap
-# Author: Alex Ganose
+# Authors: Alex Ganose and Jarvist Frost
 # Version: 1.0
 # Date: 05/05/16
 # Usage: bandgap [OUTCAR]
