@@ -1,7 +1,7 @@
 #! /bin/bash
 #
 # Name: Compare POSCARs
-# Author: Alex Ganose (alexganose@googlemail.com)
+# Author: Alex Ganose
 # Version: 1.0
 # Date: 31/03/16
 # Usage: cpos [POSCAR] [CONTCAR]

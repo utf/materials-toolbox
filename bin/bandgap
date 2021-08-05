@@ -1,7 +1,7 @@
 #! /usr/bin/awk -f
 #
 # Name: Get band gap
-# Author: Alex Ganose (alexganose@googlemail.com)
+# Authors: Alex Ganose and Jarvist Frost
 # Version: 1.0
 # Date: 05/05/16
 # Usage: bandgap [OUTCAR]
@@ -9,6 +9,10 @@
 # Extracts the indirect and direct band gap information from an OUTCAR
 # Doesn't work well for partial occupancies, so make sure SIGMA is
 # set appropriately.
+#
+# Script originally written by Jarvist Frost (https://github.com/jarvist/hpc-bin)
+# and modified to support non-collinear systems and geometry optimisations by
+# Alex Ganose.
 
 BEGIN {
     en_vbm = -999999
