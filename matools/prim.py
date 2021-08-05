@@ -29,7 +29,8 @@ def main():
     args = parser.parse_args()
 
     struct = Structure.from_file(args.file)
-    sym = SpacegroupAnalyzer(struct, symprec=args.tol)
+    species_order = {k.name: i for i, k in enumerate(struct.species)}
+    sym = SpacegroupAnalyzer(struct, symprec=args.tol, angle_tolerance=-1)
     data = sym.get_symmetry_dataset()
 
     print('Initial structure has {} atoms'.format(struct.num_sites))
@@ -50,8 +51,8 @@ def main():
     numbers = seek_data['primitive_types']
     species = [sym._unique_species[i - 1] for i in numbers]
     prim = Structure(lattice, species, scaled_positions)
-    prim.get_sorted_structure().to(filename='{}_prim'.format(args.file),
-                                   fmt=args.output)
+    prim = prim.get_sorted_structure(key=lambda x: species_order.get(x.specie.name, 0))
+    prim.to(filename='{}_prim'.format(args.file), fmt=args.output)
 
     print('Final structure has {} atoms'.format(prim.num_sites))
     print('Conv -> Prim transformation matrix:')

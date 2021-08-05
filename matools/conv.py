@@ -27,6 +27,7 @@ def main():
     args = parser.parse_args()
 
     struct = Structure.from_file(args.file)
+    species_order = {k.name: i for i, k in enumerate(struct.species)}
     sym = SpacegroupAnalyzer(struct, symprec=args.tol)
     data = sym.get_symmetry_dataset()
 
@@ -45,8 +46,8 @@ def main():
     numbers = seek_data['conv_types']
     species = [sym._unique_species[i - 1] for i in numbers]
     conv = Structure(lattice, species, scaled_positions)
-    conv.get_sorted_structure().to(filename="{}_conv".format(args.file),
-                                   fmt=args.output)
+    conv = conv.get_sorted_structure(key=lambda x: species_order.get(x.specie.name, 0))
+    conv.to(filename="{}_conv".format(args.file), fmt=args.output)
 
     print("Final structure has {} atoms".format(conv.num_sites))
 
