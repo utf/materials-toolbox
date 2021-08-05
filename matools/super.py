@@ -29,12 +29,17 @@ def main():
         sys.exit()
 
     struct = Structure.from_file(args.file)
+    species_order = {k.name: i for i, k in enumerate(struct.species)}
     nsites = struct.num_sites
     struct.make_supercell(dim)
+    struct = struct.get_sorted_structure(
+        key=lambda x: species_order.get(x.specie.name, 0)
+    )
     struct.to(filename="{}_super".format(args.file), fmt="poscar")
 
     print("Initial structure has {} atoms".format(nsites))
     print("Final structure has {} atoms".format(struct.num_sites))
+
 
 if __name__ == "__main__":
     main()
