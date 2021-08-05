@@ -56,7 +56,19 @@ def main():
     print('Final structure has {} atoms'.format(prim.num_sites))
     print('Conv -> Prim transformation matrix:')
     print('\t' + str(transform).replace('\n', '\n\t'))
-
+    
+    # check if POSCAR atomic ordering has changed
+    with open(args.file) as f: # original POSCAR file
+        lines=f.readlines()
+        orig_atoms_list = lines[5].split()
+    
+    with open('{}_prim'.format(args.file)) as f: # output prim POSCAR file
+        lines=f.readlines()
+        prim_atoms_list = lines[5].split()
+    
+    if orig_atoms_list != prim_atoms_list:
+        print("Beware! POSCAR atomic ordering in POSCAR_prim does not match that of POSCAR")
+        print("Make sure to update your POTCAR to match the atomic ordering of POSCAR_prim!")
 
 if __name__ == "__main__":
     main()
