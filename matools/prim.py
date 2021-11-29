@@ -1,9 +1,4 @@
 import argparse
-import spglib
-import seekpath
-
-from pymatgen.core.structure import Structure
-from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
 """
 Script to generate the standardised primitive cell structure
@@ -19,13 +14,23 @@ Some notes:
 
 
 def main():
+    import seekpath
+    import spglib
+    from pymatgen.core.structure import Structure
+    from pymatgen.io.vasp.inputs import Poscar
+    from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--file', default='POSCAR', type=str,
-                        help='path to input file')
-    parser.add_argument('-t', '--tol', default=1e-3, type=float,
-                        help='symmetry tolerance (default 1e-3)')
-    parser.add_argument('-o', '--output', default='poscar',
-                        help='output file format')
+    parser.add_argument(
+        "-f", "--file", default="POSCAR", type=str, help="path to input file"
+    )
+    parser.add_argument(
+        "-t",
+        "--tol",
+        default=1e-3,
+        type=float,
+        help="symmetry tolerance (default 1e-3)",
+    )
     args = parser.parse_args()
 
     struct = Structure.from_file(args.file)
@@ -33,30 +38,31 @@ def main():
     sym = SpacegroupAnalyzer(struct, symprec=args.tol, angle_tolerance=-1)
     data = sym.get_symmetry_dataset()
 
-    print('Initial structure has {} atoms'.format(struct.num_sites))
-    print('\tSpace group number: {}'.format(data['number']))
-    print('\tInternational symbol: {}'.format(data['international']))
-    print('\tLattice type: {}'.format(sym.get_lattice_type()))
+    print("Initial structure has {} atoms".format(struct.num_sites))
+    print("\tSpace group number: {}".format(data["number"]))
+    print("\tInternational symbol: {}".format(data["international"]))
+    print("\tLattice type: {}".format(sym.get_lattice_type()))
 
     # first standardise the cell using the tolerance we want (seekpath has no
     # tolerance setting)
     std = spglib.refine_cell(sym._cell, symprec=args.tol)
     seek_data = seekpath.get_path(std)
 
-    transform = seek_data['primitive_transformation_matrix']
+    transform = seek_data["primitive_transformation_matrix"]
 
     # now remake the structure
-    lattice = seek_data['primitive_lattice']
-    scaled_positions = seek_data['primitive_positions']
-    numbers = seek_data['primitive_types']
+    lattice = seek_data["primitive_lattice"]
+    scaled_positions = seek_data["primitive_positions"]
+    numbers = seek_data["primitive_types"]
     species = [sym._unique_species[i - 1] for i in numbers]
     prim = Structure(lattice, species, scaled_positions)
     prim = prim.get_sorted_structure(key=lambda x: species_order.get(x.specie.name, 0))
-    prim.to(filename='{}_prim'.format(args.file), fmt=args.output)
 
-    print('Final structure has {} atoms'.format(prim.num_sites))
-    print('Conv -> Prim transformation matrix:')
-    print('\t' + str(transform).replace('\n', '\n\t'))
+    Poscar(prim).write_file(f"{args.file}_prim", significant_figures=16)
+
+    print("Final structure has {} atoms".format(prim.num_sites))
+    print("Conv -> Prim transformation matrix:")
+    print("\t" + str(transform).replace("\n", "\n\t"))
 
 
 if __name__ == "__main__":
