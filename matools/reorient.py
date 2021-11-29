@@ -10,7 +10,7 @@ import numpy as np
 
 
 def rotation_matrix(v1, v2):
-    """ Find rotation matrix between two vectors. """
+    """Find rotation matrix between two vectors."""
     # Leaving this here in case you want to use a different framework without
     # an automatic rotation function
     u1 = v1 / np.linalg.norm(v1)
@@ -19,26 +19,28 @@ def rotation_matrix(v1, v2):
 
 
 def angle(a, b, c):
-    """ Find the angle between three points. """
+    """Find the angle between three points."""
     ba = (a - b) / np.linalg.norm(a - b)
     bc = (c - b) / np.linalg.norm(c - b)
     angle = np.vdot(ba, bc)
     return np.arccos(angle)
 
+
 def main():
-    central = int(raw_input('What is the index of the central atom? ')) - 1
-    along_c = int(raw_input('What is the index of the atom to align along c? ')) - 1
-    along_x = int(raw_input('What is the index of the atom to align along x? ')) - 1
+    central = int(raw_input("What is the index of the central atom? ")) - 1
+    along_c = int(raw_input("What is the index of the atom to align along c? ")) - 1
+    along_x = int(raw_input("What is the index of the atom to align along x? ")) - 1
 
     atoms = ase.io.read("POSCAR")
     ang = atoms.get_angle([along_c, central, along_x]) * 180 / np.pi
-    print("\nAngle between atoms is {} deg".format(ang))
+    print(f"\nAngle between atoms is {ang} deg")
 
     # rotate so that the first bond specified is aligned along z
     # if you don't want to use ase, you can use the rotation_matrix method
     # above to find the matrix between (along_c - central) and [0, 0, 1]
-    atoms.rotate(atoms.positions[along_c] - atoms.positions[central], [0, 0, 1],
-                 rotate_cell=True)
+    atoms.rotate(
+        atoms.positions[along_c] - atoms.positions[central], [0, 0, 1], rotate_cell=True
+    )
 
     # Because the bond angle might not always be exactly 90 deg we just rotate
     # around z until the the atom we want is above the central atom in the x
@@ -59,13 +61,9 @@ def main():
         angle = (2 * np.pi) - (2 * angle)
         atoms.rotate("z", angle, rotate_cell=True)
 
-    print("Atom along c: {}".format(atoms.positions[along_c]))
-    print("Central atom: {}".format(atoms.positions[central]))
-    print("Atom along x: {}".format(atoms.positions[along_x]))
+    print(f"Atom along c: {atoms.positions[along_c]}")
+    print(f"Central atom: {atoms.positions[central]}")
+    print(f"Atom along x: {atoms.positions[along_x]}")
 
     atoms.write("POSCAR_rot", vasp5=True)
     print("\nSaved rotated structure")
-
-
-if __name__ == "__main__":
-    main()

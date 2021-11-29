@@ -1,5 +1,3 @@
-import argparse
-
 """
 Script to generate the standardised conventional cell structure
 
@@ -12,6 +10,8 @@ Some notes:
 
 
 def main():
+    import argparse
+
     import seekpath
     import spglib
     from pymatgen.core.structure import Structure
@@ -36,10 +36,10 @@ def main():
     sym = SpacegroupAnalyzer(struct, symprec=args.tol)
     data = sym.get_symmetry_dataset()
 
-    print("Initial structure has {} atoms".format(struct.num_sites))
+    print(f"Initial structure has {struct.num_sites} atoms")
     print("\tSpace group number: {}".format(data["number"]))
     print("\tInternational symbol: {}".format(data["international"]))
-    print("\tLattice type: {}".format(sym.get_lattice_type()))
+    print(f"\tLattice type: {sym.get_lattice_type()}")
 
     # seekpath conventional cell definition different from spglib
     std = spglib.refine_cell(sym._cell, symprec=args.tol)
@@ -55,8 +55,4 @@ def main():
 
     Poscar(conv).write_file(f"{args.file}_conv", significant_figures=16)
 
-    print("Final structure has {} atoms".format(conv.num_sites))
-
-
-if __name__ == "__main__":
-    main()
+    print(f"Final structure has {conv.num_sites} atoms")

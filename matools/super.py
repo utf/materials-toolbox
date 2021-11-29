@@ -1,7 +1,5 @@
-import argparse
-
-
 def main():
+    import argparse
     import sys
 
     import numpy as np
@@ -40,12 +38,8 @@ def main():
     struct = struct.get_sorted_structure(
         key=lambda x: species_order.get(x.specie.name, 0)
     )
-    struct.to(filename="{}_super".format(args.file), fmt="poscar")
+    struct.to(filename=f"{args.file}_super", fmt="poscar")
     Poscar(struct).write_file(f"{args.file}_super", significant_figures=16)
 
-    print("Initial structure has {} atoms".format(nsites))
-    print("Final structure has {} atoms".format(struct.num_sites))
-
-
-if __name__ == "__main__":
-    main()
+    print(f"Initial structure has {nsites} atoms")
+    print(f"Final structure has {struct.num_sites} atoms")

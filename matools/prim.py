@@ -1,5 +1,3 @@
-import argparse
-
 """
 Script to generate the standardised primitive cell structure
 
@@ -14,6 +12,8 @@ Some notes:
 
 
 def main():
+    import argparse
+
     import seekpath
     import spglib
     from pymatgen.core.structure import Structure
@@ -38,10 +38,10 @@ def main():
     sym = SpacegroupAnalyzer(struct, symprec=args.tol, angle_tolerance=-1)
     data = sym.get_symmetry_dataset()
 
-    print("Initial structure has {} atoms".format(struct.num_sites))
+    print(f"Initial structure has {struct.num_sites} atoms")
     print("\tSpace group number: {}".format(data["number"]))
     print("\tInternational symbol: {}".format(data["international"]))
-    print("\tLattice type: {}".format(sym.get_lattice_type()))
+    print(f"\tLattice type: {sym.get_lattice_type()}")
 
     # first standardise the cell using the tolerance we want (seekpath has no
     # tolerance setting)
@@ -60,10 +60,6 @@ def main():
 
     Poscar(prim).write_file(f"{args.file}_prim", significant_figures=16)
 
-    print("Final structure has {} atoms".format(prim.num_sites))
+    print(f"Final structure has {prim.num_sites} atoms")
     print("Conv -> Prim transformation matrix:")
     print("\t" + str(transform).replace("\n", "\n\t"))
-
-
-if __name__ == "__main__":
-    main()
