@@ -55,7 +55,10 @@ def prompt_selection(entries, save_all=False):
     table = []
     for i, e in enumerate(entries):
         formula = e.data["pretty_formula"]
-        spg = SpacegroupAnalyzer(e.structure).get_space_group_symbol()
+        try:
+            spg = SpacegroupAnalyzer(e.structure).get_space_group_symbol()
+        except TypeError:
+            spg = ""
         e_above_hull = e.data["e_above_hull"]
         band_gap = e.data["band_gap"]
         nsites = e.data["nsites"]
@@ -89,11 +92,15 @@ def save_structures(entries, ids, cif=False, conv=False, ref=False, db=None):
         db = ase.db.connect(db)
     for i in ids:
         e = entries[i - 1]
-        sym = SpacegroupAnalyzer(e.structure)
-        if conv:
-            struct = sym.get_conventional_standard_structure()
-        else:
-            struct = sym.get_primitive_standard_structure()
+        try:
+            sym = SpacegroupAnalyzer(e.structure)
+            if conv:
+                struct = sym.get_conventional_standard_structure()
+            else:
+                struct = sym.get_primitive_standard_structure()
+        except TypeError:
+            struct = e.structure
+            print("Could not detect symmetry of ", struct.composition.reduced_formula)
 
         if db is not None:
             db.write(AseAtomsAdaptor.get_atoms(struct))
