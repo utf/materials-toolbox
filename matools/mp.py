@@ -16,14 +16,12 @@ from pymatgen.ext.matproj import MPRester
 from pymatgen.io.ase import AseAtomsAdaptor
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
-# ideas:
-# reference
 
 
 def get_structures(
-    mp, query, mp_structure=False, stable=False, stable_tol=0, icsd_only=False
+    mp, query, mp_structure=False, stable=False, stable_tol=0, icsd_only=False,
 ):
-    data = ["pretty_formula", "e_above_hull", "band_gap", "nsites", "volume", "icsd_id"]
+    data = ["formula_pretty", "energy_above_hull", "nsites", "volume", "material_id"]
     stype = "final" if mp_structure else "initial"
     if "," in query:
         elements = query.split(",")
@@ -32,10 +30,19 @@ def get_structures(
         )
     else:
         entries = mp.get_entries(query, inc_structure=stype, property_data=data)
+
     if stable:
-        entries = [e for e in entries if e.data["e_above_hull"] <= stable_tol]
+        entries = [e for e in entries if e.data["energy_above_hull"] <= stable_tol]
+
+    ids = [e.data["material_id"] for e in entries]
+    fields = ["band_gap", "database_IDs", "material_id"]
+    summary_entries = mp.materials.summary.search(material_ids=ids, fields=fields)
+    mapping = {e.material_id: {x: e.dict()[x] for x in fields} for e in summary_entries}
+    for e in entries:
+        e.data.update(mapping[e.data["material_id"]])
+
     if icsd_only:
-        entries = [e for e in entries if e.data["icsd_id"]]
+        entries = [e for e in entries if "icsd" in e.data["database_IDs"]]
     return entries
 
 
@@ -54,16 +61,23 @@ def prompt_selection(entries, save_all=False):
     ]
     table = []
     for i, e in enumerate(entries):
-        formula = e.data["pretty_formula"]
+        formula = e.data["formula_pretty"]
         try:
             spg = SpacegroupAnalyzer(e.structure).get_space_group_symbol()
         except TypeError:
             spg = ""
-        e_above_hull = e.data["e_above_hull"]
+        e_above_hull = e.data["energy_above_hull"]
         band_gap = e.data["band_gap"]
         nsites = e.data["nsites"]
         volume = e.data["volume"]
-        icsd_id = e.data["icsd_id"] if e.data["icsd_id"] else "N/A"
+        if "icsd" in e.data["database_IDs"]:
+            if len(e.data["database_IDs"]["icsd"]) > 1:
+                icsd_id = f"{e.data['database_IDs']['icsd'][0]}, ..."
+            else:
+                icsd_id = e.data["database_IDs"]["icsd"][0]
+        else:
+            icsd_id = "N/A"
+
         table.append(
             [i + 1, formula, spg, e_above_hull, band_gap, nsites, volume, icsd_id]
         )
@@ -82,7 +96,7 @@ def prompt_selection(entries, save_all=False):
     return ids
 
 
-def save_structures(entries, ids, cif=False, conv=False, ref=False, db=None):
+def save_structures(entries, ids, cif=False, conv=False, db=None):
     """
     Args:
         ids (list): indexes of the entries to save
@@ -108,9 +122,6 @@ def save_structures(entries, ids, cif=False, conv=False, ref=False, db=None):
             formula = e.data["pretty_formula"]
             filename = f"POSCAR_{formula}_{i}"
             struct.to(filename=filename, fmt=fmt)
-        # referencing needs work
-        # if ref:
-        #    print e.data['icsd_id']
 
 
 def main():
@@ -178,12 +189,6 @@ def main():
                         """,
     )
     parser.add_argument(
-        "--ref",
-        action="store_true",
-        help="""Use the DOI of the reference paper as the first
-                        line in the structure file""",
-    )
-    parser.add_argument(
         "--save_all", action="store_true", help="""Download all structures found"""
     )
 
@@ -195,16 +200,16 @@ def main():
     console = logging.StreamHandler(stdout)
     logging.getLogger("").addHandler(console)
 
-    mp = MPRester()
-    entries = get_structures(
-        mp,
-        args.query,
-        mp_structure=args.mp_structure,
-        stable=args.stable,
-        icsd_only=args.icsd_only,
-        stable_tol=args.stol,
-    )
+    with MPRester() as mp:
+        entries = get_structures(
+            mp,
+            args.query,
+            mp_structure=args.mp_structure,
+            stable=args.stable,
+            icsd_only=args.icsd_only,
+            stable_tol=args.stol,
+        )
     ids = prompt_selection(entries, save_all=args.save_all)
     save_structures(
-        entries, ids, cif=args.cif, conv=args.conv, ref=args.ref, db=args.ase
+        entries, ids, cif=args.cif, conv=args.conv, db=args.ase
     )
